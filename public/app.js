@@ -23,8 +23,7 @@ async function boot() {
     renderLinebar(lines);
     renderFilters(lines);
     renderPrinciples(guide.principles);
-    renderRisks(guide.risks);
-    renderWorkshop(guide.workshop);
+
     renderStacks(stacks);
     renderFinderControls(stacks, lines);
     await loadTools();
@@ -80,18 +79,6 @@ function renderPrinciples(list) {
     </div>`).join('');
 }
 
-function renderRisks(list) {
-  $('#risk-list').innerHTML = list.map((r) =>
-    `<li><b>${esc(r.title)}.</b> ${esc(r.body)}</li>`).join('');
-}
-
-function renderWorkshop(list) {
-  $('#lab-list').innerHTML = list.map((w) => `
-    <li>
-      <span class="min">${w.min}분</span>
-      <div><h4>${esc(w.title)}</h4><p>${esc(w.body)}</p></div>
-    </li>`).join('');
-}
 
 function renderStacks(stacks) {
   $('#stacks-grid').innerHTML = stacks.map((s) => `
