@@ -15,8 +15,8 @@ async function api(pathname, options) {
 /* ── 초기 로드 ─────────────────────────────── */
 async function boot() {
   try {
-    const [meta, lines, guide, stacks] = await Promise.all([
-      api('/api/meta'), api('/api/lines'), api('/api/guide'), api('/api/stacks')
+    const [meta, lines, guide] = await Promise.all([
+      api('/api/meta'), api('/api/lines'), api('/api/guide')
     ]);
     state.lines = lines;
     renderMeta(meta);
@@ -24,8 +24,7 @@ async function boot() {
     renderFilters(lines);
     renderPrinciples(guide.principles);
 
-    renderStacks(stacks);
-    renderFinderControls(stacks, lines);
+
     await loadTools();
   } catch (err) {
     console.error(err);
@@ -80,15 +79,6 @@ function renderPrinciples(list) {
 }
 
 
-function renderStacks(stacks) {
-  $('#stacks-grid').innerHTML = stacks.map((s) => `
-    <div class="stack">
-      <h3>${esc(s.role)}</h3>
-      <p class="who">${esc(s.who)}</p>
-      <ol>${s.picks.map((p) =>
-        `<li><b>${esc(p.name)}</b> <span>— ${esc(p.note)}</span></li>`).join('')}</ol>
-    </div>`).join('');
-}
 
 /* ── 도구 목록 ─────────────────────────────── */
 async function loadTools() {
@@ -137,38 +127,5 @@ $('#freeOnly').addEventListener('change', (e) => {
   loadTools();
 });
 
-/* ── 추천기 ────────────────────────────────── */
-function renderFinderControls(stacks, lines) {
-  $('#roleSelect').innerHTML = stacks
-    .map((s) => `<option value="${esc(s.id)}">${esc(s.role)}</option>`).join('');
-  $('#needs').innerHTML = lines.map((l) => `
-    <label><input type="checkbox" value="${esc(l.id)}"><span>${esc(l.name)}</span></label>`).join('');
-}
-
-$('#recommendBtn').addEventListener('click', async () => {
-  const btn = $('#recommendBtn');
-  const needs = [...document.querySelectorAll('#needs input:checked')].map((i) => i.value);
-  btn.disabled = true;
-  btn.textContent = '고르는 중…';
-  try {
-    const data = await api('/api/recommend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: $('#roleSelect').value, needs, freeOnly: $('#finderFree').checked })
-    });
-    $('#finderOut').innerHTML = data.picks.map((p) => `
-      <div class="pick">
-        <span class="pline" style="color:${esc(p.lineColor)}">${esc(p.line)}</span>
-        <h4>${esc(p.name)}<span>${esc(p.vendor)}</span></h4>
-        <p>${esc(p.tagline)}</p>
-      </div>`).join('') + `<p class="reminder">${esc(data.reminder)}</p>`;
-  } catch (err) {
-    console.error(err);
-    $('#finderOut').innerHTML = `<p class="placeholder">추천을 가져오지 못했습니다. 다시 시도해 주세요.</p>`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '추천 받기';
-  }
-});
 
 boot();
